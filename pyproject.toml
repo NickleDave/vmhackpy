@@ -1,0 +1,19 @@
+[project]
+name = "py-vm-hack-translator"
+version = "0.1"
+description = "Python implementation of Virtual Machine to Hack translator, from Elements of Computing Systems"
+authors = [{name = "David Nicholson", email = "nickledave@users.github.noreply.com"}]
+license = "MIT"
+license-files = ["LICENSE"]
+
+[dependency-groups]
+test = [
+    "pytest"
+]
+
+[build-system]
+requires = ["flit_core >=3.11,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "vmhackpy"
