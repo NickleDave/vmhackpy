@@ -36,4 +36,4 @@ class CodeWriter:
 
     def close(self):
         with pathlib.Path(self.filename).open("w") as fp:
-            fp.writelines(self.lines)
+            fp.writelines(line + "\n" for line in self.lines)
