@@ -2,33 +2,41 @@ import argparse
 import pathlib
 
 from .code_writer import CodeWriter
-from .parser import Parser
+from .parser import CommandType, Parser
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "name",
+        "source",
         type=pathlib.Path,
-        help="Name, of either a .vm file or a directory containing .vm files"
+        help="Source of VM code, either a .vm file or a directory containing .vm files"
     )
     args: argparse.Namespace = parser.parse_args()
 
-    name = pathlib.Path(args.name)
-    if name.is_dir():
-        vm_files = sorted(name.glob("*.vm"))
+    source = pathlib.Path(args.source)
+    if source.is_dir():
+        vm_files = sorted(source.glob("*.vm"))
         
     else:
-        if not name.suffix == ".vm":
+        if not source.suffix == ".vm":
             raise ValueError(
-                "Argument `name` should be directory or filename with '.vm' suffix, "
-               f"but suffix was: '{name.suffix}'"
+                "Argument `source` should be either directory or filename with '.vm' suffix, "
+               f"but suffix was: '{source.suffix}'"
             )
-        vm_files = [name]
+        vm_files = [source]
     # next line works regardless of whether we have a dir of files or a single file
-    output_filename = f"{name.name}.asm"
+    output_filename = f"{source.name}.asm"
 
     writer = CodeWriter()
     writer.set_filename(output_filename)
     for vm_file in vm_files:
-    
+        parser = Parser(vm_file)
+        while parser.has_more_commands():
+            parser.advance()
+            match parser.command_type:
+                case CommandType.C_ARITHMETIC:
+                    writer.write_arithmetic(parser.arg1)
+                case (CommandType.C_PUSH, CommandType.C_POP):
+                    writer.write_push_pop(parser.command_type, parser.arg1, parser.arg2)
+    writer.close()
