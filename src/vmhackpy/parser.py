@@ -70,7 +70,7 @@ class Parser:
 
         command = command_parts[0]
         match command:
-            case ("add", "sub", "eq", "gt", "lt", "and", "or", "neg", "not"):
+            case "add" | "sub" | "eq" | "gt" | "lt" | "and" | "or" | "neg" | "not":
                 if len(command_parts) > 1:
                     raise ValueError(
                         f"Command '{command_parts[0]}' should not have any arguments, "
@@ -80,7 +80,7 @@ class Parser:
                 self._command_type = CommandType.C_ARITHMETIC
                 self._arg1 = command
                 self._arg2 = None
-            case ("push", "pop"):
+            case "push" | "pop":
                 if len(command_parts) != 3:
                     raise ValueError(
                         f"Command '{command_parts[0]}' should have 2 arguments, "
