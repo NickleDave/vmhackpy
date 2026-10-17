@@ -26,7 +26,7 @@ def main():
             )
         vm_files = [source]
     # next line works regardless of whether we have a dir of files or a single file
-    output_filename = f"{source.name}.asm"
+    output_filename = f"{source.stem}.asm"
 
     writer = CodeWriter()
     writer.set_filename(output_filename)
