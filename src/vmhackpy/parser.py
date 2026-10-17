@@ -28,9 +28,9 @@ class Parser:
         self.command = None
         self.line_no = -1
 
-        self._command_type
-        self._arg1
-        self._arg2
+        self._command_type = None
+        self._arg1 = None
+        self._arg2 = None
 
     def has_more_commands(self):
         if self.line_no < len(self.lines) - 1:
