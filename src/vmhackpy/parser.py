@@ -96,7 +96,7 @@ class Parser:
                 self._arg1 = segment
                 self._arg2 = index
             case _:
-                raise ParseError("Unknown command: '{command}'")
+                raise ParseError(f"Unknown command: '{command}'")
 
     @property
     def command_type(self):
