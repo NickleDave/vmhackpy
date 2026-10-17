@@ -37,6 +37,7 @@ def main():
             match parser.command_type:
                 case CommandType.C_ARITHMETIC:
                     writer.write_arithmetic(parser.arg1)
-                case (CommandType.C_PUSH, CommandType.C_POP):
+                case CommandType.C_PUSH | CommandType.C_POP:
                     writer.write_push_pop(parser.command_type, parser.arg1, parser.arg2)
+
     writer.close()
