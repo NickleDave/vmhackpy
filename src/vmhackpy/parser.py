@@ -98,11 +98,14 @@ class Parser:
             case _:
                 raise ParseError("Unknown command: '{command}'")
 
+    @property
     def command_type(self):
         return self._command_type
 
+    @property
     def arg1(self):
         return self._arg1
 
+    @property
     def arg2(self):
         return self._arg2
