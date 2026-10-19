@@ -28,7 +28,7 @@ def write_add(lines: list[str]):
         "    A=A-1",    # decrement to point to top value on stack
         "    D=M",      # Pop top value off stack, D = (y = Memory[A])
         "    A=A-1",    # Decrement again
-        "    D=M+D",    # Pop + add: D = (x = Memory[A]) + y
+        "    D=D+M",    # Pop + add: D = (x = Memory[A]) + y
         "    M=D",      # Write over last value we popped with add result
         "    D=A",      # Store decremented address to update @SP
         "    @SP",      # set up to update stack pointer
