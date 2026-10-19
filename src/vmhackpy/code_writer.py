@@ -26,9 +26,9 @@ def write_add(lines: list[str]):
         "    @SP",      # set A register to RAM[0]
         "    A=M",      # set A register to *value* of RAM[0] 
         "    A=A-1",    # decrement to point to top value on stack
-        "    D=M",      # Pop top value off stack, x = Memory[A]
+        "    D=M",      # Pop top value off stack, D = (y = Memory[A])
         "    A=A-1",    # Decrement again
-        "    D=D+M",    # Pop + add: D = x + (y = Memory[A])
+        "    D=M+D",    # Pop + add: D = (x = Memory[A]) + y
         "    M=D",      # Write over last value we popped with add result
         "    D=A",      # Store decremented address to update @SP
         "    @SP",      # set up to update stack pointer
@@ -36,14 +36,141 @@ def write_add(lines: list[str]):
     ])
 
 
-def write_subtract(lines: list[str]):
+def write_sub(lines: list[str]):
+    lines.extend([
+        "    @SP",      # set A register to RAM[0]
+        "    A=M",      # set A register to *value* of RAM[0] 
+        "    A=A-1",    # decrement to point to top value on stack
+        "    D=M",      # Pop top value off stack, D = (y = Memory[A])
+        "    A=A-1",    # Decrement again
+        "    D=M-D",    # Pop + sub: D = (x = Memory[A]) - y
+        "    M=D",      # Write over last value we popped with add result
+        "    D=A",      # Store decremented address to update @SP
+        "    @SP",      # set up to update stack pointer
+        "    M=D+1",    # Make stack pointer point to location after add result
+    ])
+
+
+def write_eq(lines: list[str], jump_counter: int):
+    lines.extend([
+        "    @SP",      # set A register to RAM[0]
+        "    A=M",      # set A register to *value* of RAM[0] 
+        "    A=A-1",    # decrement to point to top value on stack
+        "    D=M",      # Pop top value off stack, D = (y = Memory[A])
+        "    A=A-1",    # Decrement again
+        "    D=M-D",    # Pop + sub: D = (x = Memory[A]) - y
+       f"@ISEQUAL_{jump_counter}",
+        "    D;JEQ",    # jump if D=0
+       f"@ISNOTEQUAL_{jump_counter}",
+        "    0;JMP",    # if we didn't jump then D != 0
+       f"(ISEQUAL_{jump_counter})",
+        "    D=-1",     # D=True
+       f"    @EQUALEND_{jump_counter}",
+        "    0;JMP",
+       f"(ISNOTEQUAL_{jump_counter})",
+        "    D=0",      # D=False
+       f"    @EQUALEND_{jump_counter}",
+        "    0;JMP",
+       f"(EQUALEND_{jump_counter})",
+        "    M=D",      # Write over last value we popped with eq result
+        "    D=A",      # Store decremented address to update @SP
+        "    @SP",      # set up to update stack pointer
+        "    M=D+1",    # Make stack pointer point to location after add result
+    ])
+
+
+def write_gt(lines: list[str], jump_counter: int):
+    lines.extend([
+        "    @SP",      # set A register to RAM[0]
+        "    A=M",      # set A register to *value* of RAM[0] 
+        "    A=A-1",    # decrement to point to top value on stack
+        "    D=M",      # Pop top value off stack, D = (y = Memory[A])
+        "    A=A-1",    # Decrement again
+        "    D=M-D",    # Pop + sub: D = (x = Memory[A]) - y
+       f"@ISGT_{jump_counter}",
+        "    D;JGT",    # jump if D>0
+       f"@ISNOTGT_{jump_counter}",
+        "    0;JMP",    # if we didn't jump then D != 0
+       f"(ISGT_{jump_counter})",
+        "    D=-1",     # D=True
+       f"    @GTEND_{jump_counter}",
+        "    0;JMP",
+       f"(ISNOTGT_{jump_counter})",
+        "    D=0",      # D=False
+       f"    @GTEND_{jump_counter}",
+        "    0;JMP",
+       f"(GTEND_{jump_counter})",
+        "    M=D",      # Write over last value we popped with eq result
+        "    D=A",      # Store decremented address to update @SP
+        "    @SP",      # set up to update stack pointer
+        "    M=D+1",    # Make stack pointer point to location after add result
+    ])
+
+
+def write_lt(lines: list[str], jump_counter: int):
     lines.extend([
         "    @SP",      # set A register to RAM[0]
         "    A=M",      # set A register to *value* of RAM[0] 
         "    A=A-1",    # decrement to point to top value on stack
         "    D=M",      # Pop top value off stack, x = Memory[A]
         "    A=A-1",    # Decrement again
-        "    D=D-M",    # Pop + add: D = x - (y = Memory[A])
+        "    D=D-M",
+       f"@ISLT_{jump_counter}",
+        "    D;JLT",    # jump if D<0
+       f"@ISNOTLT_{jump_counter}",
+        "    0;JMP",    # if we didn't jump then D != 0
+       f"(ISLT_{jump_counter})",
+        "    D=-1",     # D=True
+       f"    @LTEND_{jump_counter}",
+        "    0;JMP",
+       f"(ISNOTEQUAL_{jump_counter})",
+        "    D=0",      # D=False
+       f"    @LTEND_{jump_counter}",
+        "    0;JMP",
+       f"(LTEND_{jump_counter})",
+        "    M=D",      # Write over last value we popped with eq result
+        "    D=A",      # Store decremented address to update @SP
+        "    @SP",      # set up to update stack pointer
+        "    M=D+1",    # Make stack pointer point to location after add result
+    ])
+
+
+def write_and(lines: list[str]):
+    lines.extend([
+        "    @SP",      # set A register to RAM[0]
+        "    A=M",      # set A register to *value* of RAM[0] 
+        "    A=A-1",    # decrement to point to top value on stack
+        "    D=M",      # Pop top value off stack, y = Memory[A]
+        "    A=A-1",    # Decrement again
+        "    D=M&D",    # Pop + AND: D = (x =  Memory[A]) && y
+        "    M=D",      # Write over last value we popped with add result
+        "    D=A",      # Store decremented address to update @SP
+        "    @SP",      # set up to update stack pointer
+        "    M=D+1",    # Make stack pointer point to location after add result
+    ])
+
+
+def write_or(lines: list[str]):
+    lines.extend([
+        "    @SP",      # set A register to RAM[0]
+        "    A=M",      # set A register to *value* of RAM[0] 
+        "    A=A-1",    # decrement to point to top value on stack
+        "    D=M",      # Pop top value off stack, x = Memory[A]
+        "    A=A-1",    # Decrement again
+        "    D=M|D",    # Pop + OR: D = (x = Memory[A]) || y
+        "    M=D",      # Write over last value we popped with add result
+        "    D=A",      # Store decremented address to update @SP
+        "    @SP",      # set up to update stack pointer
+        "    M=D+1",    # Make stack pointer point to location after add result
+    ])
+
+
+def write_not(lines: list[str]):
+    lines.extend([
+        "    @SP",      # set A register to RAM[0]
+        "    A=M",      # set A register to *value* of RAM[0] 
+        "    A=A-1",    # decrement to point to top value on stack
+        "    D=!M",     # Pop top value off stack, x = ! Memory[A]
         "    M=D",      # Write over last value we popped with add result
         "    D=A",      # Store decremented address to update @SP
         "    @SP",      # set up to update stack pointer
@@ -80,6 +207,7 @@ class CodeWriter:
     ):
         self.lines = []
         write_prelude(self.lines)
+        self.jump_counter = 0
 
     def set_filename(self, filename: str):
         self.filename = filename
@@ -89,18 +217,20 @@ class CodeWriter:
             case "add":
                 write_add(self.lines)
             case "sub":
-                pass
+                write_sub(self.lines)
             case "eq":
-                pass
+                write_eq(self.lines, self.jump_counter)
+                self.jump_counter += 1
             case "gt":
-                pass
+                write_gt(self.lines, self.jump_counter)
+                self.jump_counter += 1
             case "lt":
-                pass
+                write_lt(self.lines, self.jump_counter)
+                self.jump_counter += 1
             case "and":
-                pass
+                write_and(self.lines)
             case "or":
-                pass
-        
+                write_or(self.lines)
 
     def write_push_pop(self, command: CommandType, segment: str, index: int):
         if command == CommandType.C_PUSH:
