@@ -26,10 +26,10 @@ def main():
             )
         vm_files = [source]
     # next line works regardless of whether we have a dir of files or a single file
-    output_filename = f"{source.stem}.asm"
+    output_path = source.parent / f"{source.stem}.asm"
 
     writer = CodeWriter()
-    writer.set_filename(output_filename)
+    writer.set_filename(output_path)
     for vm_file in vm_files:
         parser = Parser(vm_file)
         while parser.has_more_commands():
