@@ -209,8 +209,8 @@ class CodeWriter:
         write_prelude(self.lines)
         self.jump_counter = 0
 
-    def set_filename(self, filename: str):
-        self.filename = filename
+    def set_filename(self, filename: str | pathlib.Path):
+        self.filename = pathlib.Path(filename)
 
     def write_arithmetic(self, command: str):
         match command:
@@ -239,5 +239,5 @@ class CodeWriter:
 
     def close(self):
         write_end(self.lines)
-        with pathlib.Path(self.filename).open("w") as fp:
+        with self.filename.open("w") as fp:
             fp.writelines(line + "\n" for line in self.lines)
