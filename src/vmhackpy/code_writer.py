@@ -53,15 +53,17 @@ def write_sub(lines: list[str]):
 
 def write_eq(lines: list[str], jump_counter: int):
     lines.extend([
-        "    @SP",      # set A register to RAM[0]
-        "    A=M",      # set A register to *value* of RAM[0] 
-        "    A=A-1",    # decrement to point to top value on stack
+        "    @SP",      # Set A register to RAM[0]
+        "    M=M-1",    # Decrement stack pointer "in place" *before we pop!*
+        "    A=M",      # Get the address we just decremented
         "    D=M",      # Pop top value off stack, D = (y = Memory[A])
-        "    A=A-1",    # Decrement again
+        "    @SP",      # Decrement before pop again
+        "    M=M-1",
+        "    A=M",
         "    D=M-D",    # Pop + sub: D = (x = Memory[A]) - y
-       f"@ISEQUAL_{jump_counter}",
+       f"    @ISEQUAL_{jump_counter}",
         "    D;JEQ",    # jump if D=0
-       f"@ISNOTEQUAL_{jump_counter}",
+       f"    @ISNOTEQUAL_{jump_counter}",
         "    0;JMP",    # if we didn't jump then D != 0
        f"(ISEQUAL_{jump_counter})",
         "    D=-1",     # D=True
@@ -72,24 +74,27 @@ def write_eq(lines: list[str], jump_counter: int):
        f"    @EQUALEND_{jump_counter}",
         "    0;JMP",
        f"(EQUALEND_{jump_counter})",
-        "    M=D",      # Write over last value we popped with eq result
-        "    D=A",      # Store decremented address to update @SP
-        "    @SP",      # set up to update stack pointer
-        "    M=D+1",    # Make stack pointer point to location after add result
+        "    @SP",      # Get stack pointer address
+        "    A=M",      # Load pointer itself into A-register
+        "    M=D",      # Push eq result to stack
+        "    @SP",      # Get stack pointer address again, to increment
+        "    M=M+1",    # Increment stack pointer
     ])
 
 
 def write_gt(lines: list[str], jump_counter: int):
     lines.extend([
-        "    @SP",      # set A register to RAM[0]
-        "    A=M",      # set A register to *value* of RAM[0] 
-        "    A=A-1",    # decrement to point to top value on stack
+        "    @SP",      # Set A register to RAM[0]
+        "    M=M-1",    # Decrement stack pointer "in place" *before we pop!*
+        "    A=M",      # Get the address we just decremented
         "    D=M",      # Pop top value off stack, D = (y = Memory[A])
-        "    A=A-1",    # Decrement again
+        "    @SP",      # Decrement before pop again
+        "    M=M-1",
+        "    A=M",
         "    D=M-D",    # Pop + sub: D = (x = Memory[A]) - y
-       f"@ISGT_{jump_counter}",
+       f"    @ISGT_{jump_counter}",
         "    D;JGT",    # jump if D>0
-       f"@ISNOTGT_{jump_counter}",
+       f"    @ISNOTGT_{jump_counter}",
         "    0;JMP",    # if we didn't jump then D != 0
        f"(ISGT_{jump_counter})",
         "    D=-1",     # D=True
@@ -100,21 +105,24 @@ def write_gt(lines: list[str], jump_counter: int):
        f"    @GTEND_{jump_counter}",
         "    0;JMP",
        f"(GTEND_{jump_counter})",
-        "    M=D",      # Write over last value we popped with eq result
-        "    D=A",      # Store decremented address to update @SP
-        "    @SP",      # set up to update stack pointer
-        "    M=D+1",    # Make stack pointer point to location after add result
+        "    @SP",      # Get stack pointer address
+        "    A=M",      # Load pointer itself into A-register
+        "    M=D",      # Push gt result to stack
+        "    @SP",      # Get stack pointer address again, to increment
+        "    M=M+1",    # Increment stack pointer
     ])
 
 
 def write_lt(lines: list[str], jump_counter: int):
     lines.extend([
-        "    @SP",      # set A register to RAM[0]
-        "    A=M",      # set A register to *value* of RAM[0] 
-        "    A=A-1",    # decrement to point to top value on stack
-        "    D=M",      # Pop top value off stack, x = Memory[A]
-        "    A=A-1",    # Decrement again
-        "    D=D-M",
+        "    @SP",      # Set A register to RAM[0]
+        "    M=M-1",    # Decrement stack pointer "in place" *before we pop!*
+        "    A=M",      # Get the address we just decremented
+        "    D=M",      # Pop top value off stack, D = (y = Memory[A])
+        "    @SP",      # Decrement before pop again
+        "    M=M-1",
+        "    A=M",
+        "    D=M-D",    # Pop + sub: D = (x = Memory[A]) - y
        f"@ISLT_{jump_counter}",
         "    D;JLT",    # jump if D<0
        f"@ISNOTLT_{jump_counter}",
@@ -128,10 +136,11 @@ def write_lt(lines: list[str], jump_counter: int):
        f"    @LTEND_{jump_counter}",
         "    0;JMP",
        f"(LTEND_{jump_counter})",
-        "    M=D",      # Write over last value we popped with eq result
-        "    D=A",      # Store decremented address to update @SP
-        "    @SP",      # set up to update stack pointer
-        "    M=D+1",    # Make stack pointer point to location after add result
+        "    @SP",      # Get stack pointer address
+        "    A=M",      # Load pointer itself into A-register
+        "    M=D",      # Push lt result to stack
+        "    @SP",      # Get stack pointer address again, to increment
+        "    M=M+1",    # Increment stack pointer
     ])
 
 
