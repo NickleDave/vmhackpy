@@ -51,6 +51,18 @@ def write_sub(lines: list[str]):
     ])
 
 
+def write_neg(lines: list[str]):
+    lines.extend([
+        "    @SP",      # set A register to RAM[0]
+        "    A=M",      # set A register to *value* of RAM[0] 
+        "    A=A-1",    # decrement to point to top value on stack
+        "    D=-M",     # Pop top value off stack and make negative, y = -Memory[A]
+        "    M=D",      # Write over last value we popped with neg result
+        # note we don't need to update stack pointer since 
+        # we just wrote over top value on the stack, so next empty word stays the same
+    ])
+
+
 def write_eq(lines: list[str], jump_counter: int):
     lines.extend([
         "    @SP",      # Set A register to RAM[0]
