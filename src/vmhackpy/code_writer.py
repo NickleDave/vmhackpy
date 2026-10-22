@@ -238,6 +238,8 @@ class CodeWriter:
                 write_add(self.lines)
             case "sub":
                 write_sub(self.lines)
+            case "neg":
+                write_neg(self.lines)
             case "eq":
                 write_eq(self.lines, self.jump_counter)
                 self.jump_counter += 1
@@ -251,6 +253,8 @@ class CodeWriter:
                 write_and(self.lines)
             case "or":
                 write_or(self.lines)
+            case "not":
+                write_not(self.lines)
 
     def write_push_pop(self, command: CommandType, segment: str, index: int):
         if command == CommandType.C_PUSH:
