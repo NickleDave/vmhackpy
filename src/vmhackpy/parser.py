@@ -29,6 +29,7 @@ class Parser:
         self.line_no = -1
 
         self._command_type = None
+        self._line = None
         self._arg1 = None
         self._arg2 = None
 
@@ -62,6 +63,7 @@ class Parser:
                 line = line_no_comment
                 is_empty_line_or_comment = False
 
+        self._line = line
         command_parts = line.split(" ")
         if len(command_parts) > 3:
             raise ParseError(
@@ -97,6 +99,10 @@ class Parser:
                 self._arg2 = index
             case _:
                 raise ParseError(f"Unknown command: '{command}'")
+
+    @property
+    def line(self):
+        return self._line
 
     @property
     def command_type(self):
