@@ -34,6 +34,7 @@ def main():
         parser = Parser(vm_file)
         while parser.has_more_commands():
             parser.advance()
+            writer.write_comment(parser.line)
             match parser.command_type:
                 case CommandType.C_ARITHMETIC:
                     writer.write_arithmetic(parser.arg1)
