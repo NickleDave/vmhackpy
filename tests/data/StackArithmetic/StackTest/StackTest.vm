@@ -7,39 +7,59 @@
 
 push constant 17
 push constant 17
+// next line: RAM[256] should be -1; @SP should be 257
 eq
 push constant 17
 push constant 16
+// next line: RAM[257] should be 0; @SP should be 258
 eq
 push constant 16
 push constant 17
+// next line: RAM[258] should be 0; @SP should be 259
 eq
 push constant 892
 push constant 891
+// next line: RAM[259] should be 0; @SP should be 260
 lt
 push constant 891
 push constant 892
+// next line: RAM[260] should be -1; @SP should be 261
 lt
 push constant 891
 push constant 891
+// next line: RAM[261] should be 0; @SP should be 262
 lt
 push constant 32767
 push constant 32766
+// next line: RAM[262] should be -1; @SP should be 263
 gt
 push constant 32766
 push constant 32767
+// next line: RAM[263] should be 0; @SP should be 264
 gt
 push constant 32766
 push constant 32766
+// next line: RAM[264] should be 0; @SP should be 265
 gt
+// next line: RAM[265] should be 57; @SP should be 266
 push constant 57
+// next line: RAM[266] should be 31; @SP should be 267
 push constant 31
+// next line: RAM[267] should be 31; @SP should be 268
 push constant 53
+// next line: RAM[266] should be 84; @SP should be 267
 add
+// next line: RAM[267] should be 112; @SP should be 268
 push constant 112
+// next line: RAM[266] should be -28; @SP should be 267
 sub
+// next line: RAM[266] should be 28; @SP should be 267
 neg
+// next line: RAM[265] should be AND(57, 28) -> 24 (0b000000000111001 & 0b000000000011100); @SP should be 266
 and
+// next line: RAM[266] should be 82; @SP should be 267
 push constant 82
+// next line: RAM[267] should be OR(24, 82) -> 90 (0b000000000011000 | 0b000000001010010); @SP should be 268
 or
+// next line: RAM[268] should be NOT(90) -> -90 (in 15 bit)
 not
