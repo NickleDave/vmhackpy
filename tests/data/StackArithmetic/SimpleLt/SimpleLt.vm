@@ -1,0 +1,5 @@
+// Pushes two constants x and y, then tests if x > y
+
+push constant 8
+push constant 12
+lt

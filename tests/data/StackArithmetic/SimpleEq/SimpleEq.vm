@@ -1,0 +1,5 @@
+// Pushes two constants and tests if they are equal
+
+push constant 8
+push constant 8
+eq

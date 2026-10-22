@@ -1,0 +1,5 @@
+// Pushes two constants and compute their AND
+
+push constant 8
+push constant 8
+and
