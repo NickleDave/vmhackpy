@@ -143,7 +143,7 @@ def write_lt(lines: list[str], jump_counter: int):
         "    D=-1",     # D=True
        f"    @LTEND_{jump_counter}",
         "    0;JMP",
-       f"(ISNOTEQUAL_{jump_counter})",
+       f"(ISNOTLT_{jump_counter})",
         "    D=0",      # D=False
        f"    @LTEND_{jump_counter}",
         "    0;JMP",
