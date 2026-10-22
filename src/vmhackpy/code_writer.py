@@ -193,9 +193,8 @@ def write_not(lines: list[str]):
         "    A=A-1",    # decrement to point to top value on stack
         "    D=!M",     # Pop top value off stack, x = ! Memory[A]
         "    M=D",      # Write over last value we popped with add result
-        "    D=A",      # Store decremented address to update @SP
-        "    @SP",      # set up to update stack pointer
-        "    M=D+1",    # Make stack pointer point to location after add result
+        # note we don't need to update stack pointer since 
+        # we just wrote over top value on the stack, so next empty word stays the same
     ])
 
 
