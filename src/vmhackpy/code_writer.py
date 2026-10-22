@@ -261,6 +261,11 @@ class CodeWriter:
             if segment == "constant":
                 write_push_constant(self.lines, constant=index)
 
+    def write_comment(self, comment: str):
+        self.lines.append(
+            f"// {comment}"
+        )
+
     def close(self):
         write_end(self.lines)
         with self.filename.open("w") as fp:
