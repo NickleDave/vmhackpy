@@ -1,4 +1,5 @@
 import pathlib
+from typing import Literal
 
 from .parser import CommandType
 
@@ -20,7 +21,7 @@ def write_prelude(lines: list[str]):
     ])
 
 
-# ---- Arithmetic commands
+# ---- Stack arithmetic commands --------------------------------------------------------
 def write_add(lines: list[str]):
     lines.extend([
         "    @SP",      # set A register to RAM[0]
@@ -198,7 +199,8 @@ def write_not(lines: list[str]):
     ])
 
 
-# ---- push
+# ---- Memory access commands -----------------------------------------------------------
+# N.B.: these are orded by "the order the book tells us to implement them in"
 def write_push_constant(lines: list[str], constant: int):
     lines.extend([
        f"    @{constant}",  # put constant value into A register
@@ -211,6 +213,71 @@ def write_push_constant(lines: list[str], constant: int):
     ])
 
 
+def write_push_lcl_arg_this_that(lines: list[str], symbol:str, index: int):
+    lines.extend([
+       f"    @{symbol}",# put symbol index into A register
+        "    D=M",      # put symbol pointer in D: base of segment
+       f"    @{index}", # put value of offset index into A register
+        "    A=D+A",    # store segment base + offset index in A
+        "    D=M",      # store the *value* of RAM[ARG base + offset] in D
+        "    @SP",      # Set A register to RAM[0]
+        "    A=M",      # Set A to Memory[0]
+        "    M=D",      # Push ARG value in D onto stack, Memory[A]
+        "    @SP",      # Set up to increment stack pointer
+        "    M=M+1",    # Increment stack pointer; Memory[0] = Memory[0] + 1
+    ])
+
+
+def write_pop_lcl_arg_this_that(lines: list[str], symbol:str, index: int):
+    lines.extend([
+       f"    @{symbol}",# put symbol index into A register
+        "    D=M",      # put symbol pointer in D: base of segment
+       f"    @{index}", # put value of offset index into A register        
+        "    D=D+A",    # store segment base + offset in D
+        "    @R13",     # put VM register address in A
+        "    M=D",      # stash segment base + offset from D in VM register
+        "    @SP",      # Set A register to RAM[0]
+        "    M=M-1",    # Decrement stack pointer, RAM[0] = RAM[0] - 1
+        "    A=M",      # put *value* of stack pointer in A
+        "    D=M",      # pop top value off stack in D
+        "    @R13",     # put VM register address in A, pointer to segment base + offset
+        "    A=M",      # Set A to segment base + offset
+        "    M=D",      # Put value from D that we popped off stack into segment at offset
+        "    @SP",      # Set up to increment stack pointer
+        "    M=M+1",    # Increment stack pointer; Memory[0] = Memory[0] + 1
+    ])
+
+
+def write_push_pointer_temp(lines: list[str], ram_address: int):
+    lines.extend([
+       f"    @{ram_address}",   # get address
+        "    A=M",              # put pointer from address in A
+        "    D=M",              # put value from pointer in D, to push onto stack
+        "    @SP",              # Set A to 0
+        "    A=M",              # Set A to stack pointer
+        "    M=D",              # Push value from pointer / temp on to stack
+        "    @SP",              # Set up to increment stack pointer
+        "    M=M+1",            # Actually increment stack pointer           
+    ])
+
+
+def write_pop_pointer_temp(lines: list[str], ram_address: int):
+    lines.extend([
+        "    @SP",              # Set up to decrement stack pointer
+        "    M=M-1",            # Actually decrement stack pointer
+        "    D=M",              # Pop value off stack
+       f"    @{ram_address}",   # get address
+        "    A=M",              # put pointer from address in A
+        "    M=D",              # Put value we popped off stack into pointer
+    ])
+
+
+def write_push_static(lines: list[str], index: int):
+    lines.extend([
+    ])
+
+
+
 # ---- end of program
 def write_end(lines: list[str]):
     """Write code that signals end of assembly program"""
@@ -219,6 +286,39 @@ def write_end(lines: list[str]):
         "    @END",
         "    0;JMP",
     ])
+
+
+VM_SEGMENT_ASM_SYMBOL_MAP = {
+    "argument": "ARG",
+    "local": "LCL",
+    "this": "THIS",
+    "that": "THAT",
+}
+
+
+def pointer_temp_ram_address(
+    segment: Literal["pointer", "temp"],
+    index: int,
+):
+    if segment not in ("pointer", "temp"):
+        raise ValueError(
+            f"pointer_temp_ram_address: Segment should be one of ('pointer', 'temp') but was: '{segment}'"
+        )
+    match segment:
+        case "pointer":
+            if index not in (0, 1):
+                raise ValueError(
+                    "pointer_temp_ram_address: when `segment` is 'pointer', "
+                    f"`index` must be 0 or 1 but was: {index}"
+                )
+            return 3 + index
+        case "temp":
+            if index < 0 or index > 7:
+                raise ValueError(
+                    "pointer_temp_ram_address: when `segment` is 'temp', "
+                    f"`index` must be int in range 0-7 but was: {index}"
+                )
+            return 5 + index
 
 
 class CodeWriter:
@@ -257,9 +357,49 @@ class CodeWriter:
                 write_not(self.lines)
 
     def write_push_pop(self, command: CommandType, segment: str, index: int):
-        if command == CommandType.C_PUSH:
-            if segment == "constant":
+        # N.B.: these are orded by "PUSH or POP, then, the order the book tells us to implement them in"
+        match (command, segment):
+            # ---- PUSH cases --------------------------------------------------
+            case (CommandType.C_PUSH, "constant"):
                 write_push_constant(self.lines, constant=index)
+            case (
+                (CommandType.C_PUSH, "argument") | 
+                (CommandType.C_PUSH, "local" ) |
+                (CommandType.C_PUSH, "this" ) |
+                (CommandType.C_PUSH, "that" )
+            ):
+                symbol = VM_SEGMENT_ASM_SYMBOL_MAP[segment]
+                write_push_lcl_arg_this_that(self.lines, symbol, index)
+            case (
+                (CommandType.C_PUSH, "pointer") |
+                (CommandType.C_PUSH, "temp")
+            ):
+                ram_address = pointer_temp_ram_address(segment, index)
+                write_push_pointer_temp(self.lines, ram_address)
+            case (CommandType.C_PUSH, "static"):
+                write_push_static(self.lines, index)
+            # ---- POP cases ---------------------------------------------------
+            case (
+                (CommandType.C_POP, "argument") |
+                (CommandType.C_POP, "local") |
+                (CommandType.C_POP, "this") |
+                (CommandType.C_POP, "that")
+            ):
+                symbol = VM_SEGMENT_ASM_SYMBOL_MAP[segment]
+                write_pop_lcl_arg_this_that(self.lines, symbol, index)
+            case (
+                (CommandType.C_POP, "pointer") |
+                (CommandType.C_POP, "temp")
+            ):
+                ram_address = pointer_temp_ram_address(segment, index)
+                write_push_pointer_temp(self.lines, ram_address)
+            case (CommandType.C_POP, "static"):
+                pass
+            # ---- error handling ----------------------------------------------
+            case _:
+                raise ValueError(
+                    f"CodeWriter.write_push_pop: Invalid combination of command and segment: {command}, {segment}"
+                )
 
     def write_comment(self, comment: str):
         self.lines.append(
