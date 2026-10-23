@@ -96,7 +96,12 @@ class Parser:
                         self._command_type = CommandType.C_POP
                 _, segment, index = command_parts
                 self._arg1 = segment
-                self._arg2 = index
+                try:
+                    self._arg2 = int(index)
+                except ValueError as e:
+                    raise(
+                        "Parser.advance: could not convert arg2 to integer: {index}"
+                    ) from e
             case _:
                 raise ParseError(f"Unknown command: '{command}'")
 
