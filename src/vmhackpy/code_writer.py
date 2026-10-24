@@ -246,11 +246,10 @@ def write_pop_lcl_arg_this_that(lines: list[str], symbol:str, index: int):
     ])
 
 
-def write_push_pointer(lines: list[str], ram_address: int):
+def write_push_pointer_temp(lines: list[str], ram_address: int):
     lines.extend([
-       f"    @{ram_address}",   # put address of pointer in A
-        "    A=M",              # put pointer from address in A
-        "    D=M",              # put value from pointer in D, to push onto stack
+       f"    @{ram_address}",   # Put address within pointer or temp segment in A
+        "    D=M",              # Put value from pointer/temp in D, to push onto stack
         "    @SP",              # Set A to 0
         "    A=M",              # Set A to stack pointer
         "    M=D",              # Push value from pointer / temp on to stack
@@ -259,38 +258,14 @@ def write_push_pointer(lines: list[str], ram_address: int):
     ])
 
 
-def write_push_temp(lines: list[str], ram_address: int):
-    lines.extend([
-       f"    @{ram_address}",   # put address within temp segment in A
-        "    D=M",              # put value from temp in D, to push onto stack
-        "    @SP",              # Set A to 0
-        "    A=M",              # Set A to stack pointer
-        "    M=D",              # Push value from pointer / temp on to stack
-        "    @SP",              # Set up to increment stack pointer
-        "    M=M+1",            # Actually increment stack pointer           
-    ])
-
-
-def write_pop_pointer(lines: list[str], ram_address: int):
+def write_pop_pointer_temp(lines: list[str], ram_address: int):
     lines.extend([
         "    @SP",              # Set up to decrement stack pointer
         "    M=M-1",            # Actually decrement stack pointer
-        "    A=M",              # put *value* of stack pointer in A
-        "    D=M",              # Pop value off stack
-       f"    @{ram_address}",   # put address of pointer in A
-        "    A=M",              # put pointer from address in A
-        "    M=D",              # Put value we popped off stack into pointer
-    ])
-
-
-def write_pop_temp(lines: list[str], ram_address: int):
-    lines.extend([
-        "    @SP",              # Set up to decrement stack pointer
-        "    M=M-1",            # Actually decrement stack pointer
-        "    A=M",              # put *value* of stack pointer in A
-        "    D=M",              # Pop value off stack
-       f"    @{ram_address}",   # put address within temp segment in A
-        "    M=D",              # Put value we popped off stack into temp
+        "    A=M",              # Put *value* of RAM[stack pointer] in A
+        "    D=M",              # Pop value off stack into D
+       f"    @{ram_address}",   # Put address within pointer or temp segment in A
+        "    M=D",              # Put value we popped off stack into pointer/temp
     ])
 
 
@@ -396,12 +371,12 @@ class CodeWriter:
             ):
                 symbol = VM_SEGMENT_ASM_SYMBOL_MAP[segment]
                 write_push_lcl_arg_this_that(self.lines, symbol, index)
-            case (CommandType.C_PUSH, "pointer"):
+            case (
+                (CommandType.C_PUSH, "pointer") |
+                (CommandType.C_PUSH, "temp")
+            ):
                 ram_address = pointer_temp_ram_address(segment, index)
-                write_push_pointer(self.lines, ram_address)
-            case (CommandType.C_PUSH, "temp"):
-                ram_address = pointer_temp_ram_address(segment, index)
-                write_push_temp(self.lines, ram_address)
+                write_push_pointer_temp(self.lines, ram_address)
             case (CommandType.C_PUSH, "static"):
                 write_push_static(self.lines, index)
             # ---- POP cases ---------------------------------------------------
@@ -413,12 +388,12 @@ class CodeWriter:
             ):
                 symbol = VM_SEGMENT_ASM_SYMBOL_MAP[segment]
                 write_pop_lcl_arg_this_that(self.lines, symbol, index)
-            case (CommandType.C_POP, "pointer"):
+            case (
+                (CommandType.C_POP, "pointer") |
+                (CommandType.C_POP, "temp")
+            ):
                 ram_address = pointer_temp_ram_address(segment, index)
-                write_pop_pointer(self.lines, ram_address)
-            case (CommandType.C_POP, "temp"):
-                ram_address = pointer_temp_ram_address(segment, index)
-                write_pop_temp(self.lines, ram_address)
+                write_pop_pointer_temp(self.lines, ram_address)
             case (CommandType.C_POP, "static"):
                 write_pop_static(self.lines, index)
             # ---- error handling ----------------------------------------------
