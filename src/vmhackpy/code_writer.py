@@ -269,13 +269,26 @@ def write_pop_pointer_temp(lines: list[str], ram_address: int):
     ])
 
 
-def write_push_static(lines: list[str], index: int):
+def write_push_static(lines: list[str], stem:str, index: int):
     lines.extend([
+       f"    @{stem}.{index}",  # Put static variable address in A
+        "    D=M",              # Put value from address in D
+        "    @SP",              # Set A to 0
+        "    A=M",              # Set A to stack pointer
+        "    M=D",              # Push value from pointer / temp on to stack
+        "    @SP",              # Set up to increment stack pointer
+        "    M=M+1",            # Actually increment stack pointer           
     ])
 
 
-def write_pop_static(lines: list[str], index: int):
+def write_pop_static(lines: list[str], stem:str, index: int):
     lines.extend([
+        "    @SP",              # Set up to decrement stack pointer
+        "    M=M-1",            # Actually decrement stack pointer
+        "    A=M",              # Put *value* of RAM[stack pointer] in A
+        "    D=M",              # Pop value off stack into D
+       f"    @{stem}.{index}",  # Put static variable address in A
+        "    M=D",              # Put value popped off stack into static variable
     ])
 
 
@@ -329,9 +342,11 @@ class CodeWriter:
         self.lines = []
         write_prelude(self.lines)
         self.jump_counter = 0
+        self.stem: str = None
 
     def set_filename(self, filename: str | pathlib.Path):
         self.filename = pathlib.Path(filename)
+        self.stem = self.filename.stem
 
     def write_arithmetic(self, command: str):
         match command:
@@ -378,7 +393,7 @@ class CodeWriter:
                 ram_address = pointer_temp_ram_address(segment, index)
                 write_push_pointer_temp(self.lines, ram_address)
             case (CommandType.C_PUSH, "static"):
-                write_push_static(self.lines, index)
+                write_push_static(self.lines, self.stem, index)
             # ---- POP cases ---------------------------------------------------
             case (
                 (CommandType.C_POP, "argument") |
@@ -395,7 +410,7 @@ class CodeWriter:
                 ram_address = pointer_temp_ram_address(segment, index)
                 write_pop_pointer_temp(self.lines, ram_address)
             case (CommandType.C_POP, "static"):
-                write_pop_static(self.lines, index)
+                write_pop_static(self.lines, self.stem, index)
             # ---- error handling ----------------------------------------------
             case _:
                 raise ValueError(
