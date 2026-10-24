@@ -275,6 +275,7 @@ def write_pop_pointer(lines: list[str], ram_address: int):
     lines.extend([
         "    @SP",              # Set up to decrement stack pointer
         "    M=M-1",            # Actually decrement stack pointer
+        "    A=M",              # put *value* of stack pointer in A
         "    D=M",              # Pop value off stack
        f"    @{ram_address}",   # put address of pointer in A
         "    A=M",              # put pointer from address in A
@@ -286,6 +287,7 @@ def write_pop_temp(lines: list[str], ram_address: int):
     lines.extend([
         "    @SP",              # Set up to decrement stack pointer
         "    M=M-1",            # Actually decrement stack pointer
+        "    A=M",              # put *value* of stack pointer in A
         "    D=M",              # Pop value off stack
        f"    @{ram_address}",   # put address within temp segment in A
         "    M=D",              # Put value we popped off stack into temp
