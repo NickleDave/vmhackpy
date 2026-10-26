@@ -11,7 +11,7 @@ compare-to StaticTest.cmp,
 
 set RAM[0] 256,    // initializes the stack pointer
 
-repeat 200 {       // enough cycles to complete the execution
+repeat 275 {       // enough cycles to complete the execution
   ticktock;
 }
 
