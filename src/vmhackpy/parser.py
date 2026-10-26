@@ -15,6 +15,9 @@ class CommandType(enum.Enum):
     C_FUNCTION = 6
     C_RETURN = 7
     C_CALL = 8
+    C_LABEL = 9
+    C_GOTO = 10
+    C_IF = 11
 
 
 class Parser:
@@ -102,6 +105,21 @@ class Parser:
                     raise(
                         "Parser.advance: could not convert arg2 to integer: {index}"
                     ) from e
+            case ("label" | "goto" | "if-goto"):
+                if len(command_parts) != 2:
+                    raise ValueError(
+                        f"Command '{command_parts[0]}' should have 1 argument `label`, "
+                        f"but had {len(command_parts) - 1}"
+                    )
+                match command:
+                    case "label":
+                        self._command_type = CommandType.C_LABEL
+                    case "goto":
+                        self._command_type = CommandType.C_GOTO
+                    case "if-goto":
+                        self._command_type = CommandType.C_IF
+                self._arg1 = command_parts[1]  # label
+                self._arg2 = None
             case _:
                 raise ParseError(f"Unknown command: '{command}'")
 
