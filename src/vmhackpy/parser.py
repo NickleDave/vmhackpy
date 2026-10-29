@@ -1,5 +1,19 @@
 import enum
 import pathlib
+import re
+
+# taken from my py-hack-assembler;
+# IIUC the specification in EoCS chapter 8
+# for VM labels is exactly the same as asm symbols,
+# perhaps not surprisingly
+LabelPattern = re.compile(r"""
+^
+([a-zA-Z_.$:]     # first char must be alpha or special
+[0-9a-zA-Z_.$:]*)* # subsequent chars can also be numeric  
+$
+""", re.VERBOSE
+)
+
 
 class ParseError(BaseException):
     pass
@@ -15,9 +29,6 @@ class CommandType(enum.Enum):
     C_FUNCTION = 6
     C_RETURN = 7
     C_CALL = 8
-    C_LABEL = 9
-    C_GOTO = 10
-    C_IF = 11
 
 
 class Parser:
@@ -67,10 +78,10 @@ class Parser:
                 is_empty_line_or_comment = False
 
         self._line = line
-        command_parts = line.split(" ")
+        command_parts = line.split()  # remove whitespace
         if len(command_parts) > 3:
             raise ParseError(
-                f"Greater than 3 parts to command {self.command_ind}: {line}"
+                f"Greater than 3 parts to command {self.line_no}: {line}"
             )
 
         command = command_parts[0]
@@ -118,7 +129,16 @@ class Parser:
                         self._command_type = CommandType.C_GOTO
                     case "if-goto":
                         self._command_type = CommandType.C_IF
-                self._arg1 = command_parts[1]  # label
+
+                label: list[str] = LabelPattern.findall(command_parts[1])
+                if len(label) == 1:
+                    label = label[0]
+                else:
+                    raise ParseError(
+                        f"Line {self.line_no}: '{command_parts[1]}' is not a valid label:\n{command}"
+                    )
+
+                self._arg1 = label  # label
                 self._arg2 = None
             case _:
                 raise ParseError(f"Unknown command: '{command}'")
