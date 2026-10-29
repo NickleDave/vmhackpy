@@ -30,6 +30,9 @@ def main():
 
     writer = CodeWriter()
     writer.set_filename(output_path)
+    # FIXME: uncomment once you finish `write_init`
+    # writer.write_init()
+
     for vm_file in vm_files:
         parser = Parser(vm_file)
         while parser.has_more_commands():
@@ -39,6 +42,12 @@ def main():
                 case CommandType.C_ARITHMETIC:
                     writer.write_arithmetic(parser.arg1)
                 case CommandType.C_PUSH | CommandType.C_POP:
-                    writer.write_push_pop(parser.command_type, parser.arg1, parser.arg2)
+                    writer.write_push_pop(command=parser.command_type, segment=parser.arg1, index=parser.arg2)
+                case CommandType.C_LABEL:
+                    writer.write_label(label=parser.arg1)
+                case CommandType.C_GOTO:
+                    writer.write_goto(label=parser.arg1)
+                case CommandType.C_IF:
+                    writer.write_if(label=parser.arg1)
 
     writer.close()
