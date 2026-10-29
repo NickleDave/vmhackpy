@@ -4,18 +4,19 @@ from typing import Literal
 from .parser import CommandType
 
 
-# ---- preludes
-def write_prelude(lines: list[str]):
-    """Write "prelude", initialization that must occur 
+# ---- bootstrap
+def write_init(lines: list[str]):
+    """Write bootstrap code, initialization that must occur 
     at the start of each Hack assembly program to set up 
     the Virtual Machine
     """
     lines.extend([
-        "// initialize",
+        "// bootstrap",
         "    @256",
         "    D=A",
         "    @SP",
         "    M=D",
+        #FIXME: add call to sys.init
         "",
         "// program start",
     ])
@@ -309,6 +310,7 @@ def write_goto(lines: list[str], stem: str, label: str) -> None:
 def write_if(lines: list[str], stem: str, label: str) -> None:
     lines.extend([
         "    @SP",              # Set up to pop
+        "    M=M-1",            # Actually decrement stack pointer
         "    A=M",              # Set A to M[0]
         "    D=M",              # Pop into D
        f"    @{stem}.{label}",  # Put label in A
@@ -370,6 +372,9 @@ class CodeWriter:
     def set_filename(self, filename: str | pathlib.Path):
         self.filename = pathlib.Path(filename)
         self.stem = self.filename.stem
+
+    def write_init(self):
+        write_init(self.lines)
 
     def write_arithmetic(self, command: str):
         match command:
