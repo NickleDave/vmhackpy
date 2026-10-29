@@ -292,6 +292,30 @@ def write_pop_static(lines: list[str], stem:str, index: int):
     ])
 
 
+# ---- program flow ------------------------------------------------------------------------
+def write_label(lines: list[str], stem: str, label: str) -> None:
+    lines.extend([
+        f"({stem}.{label})",    # Write label
+    ])
+
+
+def write_goto(lines: list[str], stem: str, label: str) -> None:
+    lines.extend([
+      f"    @{stem}.{label}",   # Put label in A
+       "    0;JMP",             # Idiomatic way of writing unconditional jump in Hack assembly
+    ])
+
+
+def write_if(lines: list[str], stem: str, label: str) -> None:
+    lines.extend([
+        "    @SP",              # Set up to pop
+        "    A=M",              # Set A to M[0]
+        "    D=M",              # Pop into D
+       f"    @{stem}.{label}",  # Put label in A
+        "    D;JNE",            # Jump if the value we popped off the stack is not equal to zero
+    ])
+
+
 # ---- end of program
 def write_end(lines: list[str]):
     """Write code that signals end of assembly program"""
@@ -340,7 +364,6 @@ class CodeWriter:
         self,
     ):
         self.lines = []
-        write_prelude(self.lines)
         self.jump_counter = 0
         self.stem: str = None
 
@@ -416,6 +439,15 @@ class CodeWriter:
                 raise ValueError(
                     f"CodeWriter.write_push_pop: Invalid combination of command and segment: {command}, {segment}"
                 )
+
+    def write_label(self, label: str) -> None:
+        write_label(self.lines, self.stem, label)
+
+    def write_goto(self, label: str) -> None:
+        write_goto(self.lines, self.stem, label)
+
+    def write_if(self, label: str) -> None:
+        write_if(self.lines, self.stem, label)
 
     def write_comment(self, comment: str):
         self.lines.append(
