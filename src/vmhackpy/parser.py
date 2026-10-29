@@ -63,13 +63,13 @@ class Parser:
         is_empty_line_or_comment = True
         while is_empty_line_or_comment:
             line = self.lines[self.line_no]
-            if line == "":
-                # empty line
+            if line.split() == []:  # if stripping whitespace returns an empty list ->
+                # then we must have an empty line
                 self.line_no += 1
                 continue
 
             line_no_comment = line.split("//")[0]
-            if line_no_comment == "":
+            if line_no_comment.split() == []:
                 # -> whole line is a comment
                 self.line_no += 1
                 continue
