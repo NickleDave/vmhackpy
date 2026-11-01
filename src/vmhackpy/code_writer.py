@@ -318,6 +318,67 @@ def write_if(lines: list[str], stem: str, label: str) -> None:
     ])
 
 
+# ---- subroutines -------------------------------------------------------------------------------
+def write_function(lines: list[str], function_name: str, num_args: int) -> None:
+    lines.append(
+       f"({function_name})",    # Declare function label in the assemblyu code
+    )
+    # As the callee, we assume the top of the global stack already has
+    # the start of our frame: the args and the saved state of the calling function,
+    # and now the stack pointer is just above those things, where the LCL (local)
+    # variables will go. So we can simply loop in our assembly generation, as follows: 
+    for _ in range(num_args):
+        lines.extend([
+            "@SP",              # Set A to Memory[0] (the stack pointer SP)
+            "A=M",              # Set A to *value* in SP
+            "M=0",              # Set Memory[SP] to 0 -- initializes the local variable
+            "@SP",              # Set up to increment SP
+            "M=M+1",            # Actually increment SP
+        ])
+
+
+def write_return(lines: list[str]):
+    lines.extend([
+        "    @LCL",             # Set A to 1, address of local variable pointer LCL
+        "    D=M",              # Put *value* of LCL into D 
+        "    @R13",             # Set up to put LCL into Memory[13] 
+        "    M=D",              # Put LCL value into Memory[13], temp variable "FRAME" (fig. 8.5 from book)
+        "    @5",               # Set up to decrement LCL to compute return address
+        "    D=D-A",            # Compute return address
+        "    @R14",             # Set up to put return address into Memory[14]
+        "    M=D",              # Put return address into Memoryu[14], temp variable "RET" (fig 8.5 from book)
+        "    @SP",              # Set up to pop the return value into ARG
+        "    A=M-1",            # Set A to pointer to return value
+        "    D=M",              # Put actual return value in D
+        "    @ARG",             # Set A to 2, address of function args pointer ARG
+        "    A=M",              # Put *value* of ARG in A
+        "    M=D",              # Replace ARG 0 with return value, `*ARG = pop()` (fig 8.5 from book)
+        "    D=A",              # Put ARG pointer val in D, so we can set SP to right after it
+        "    @SP",              # Set up to update SP
+        "    M=D+1",            # `SP = ARG + 1` (fig 8.5 from book)
+    ])
+
+    for ind, pointer in zip(
+        (1, 2, 3, 4),
+        ("THAT", "THIS", "ARG", "LCL"),
+    ):
+        lines.extend([
+            "    @R13",         # Set up to get temp variable FRAME
+            "    D=M",          # Put FRAME into D
+           f"    @{ind}",       # Put offset into A
+            "    A=D-A",        # FRAME - offset
+            "    D=M",          # Put `*(FRAME - offset)` in D
+           f"    @{pointer}",  # Put pointer location into A
+            "    M=D",          # `pointer = *(FRAME - offset)`
+        ])
+
+    lines.extend([
+        "    @R14",             # Set up to get temp variable RET
+        "    A=M",              # Put return address from RET in A
+        "    0; JMP",           # Idiomatic Hack assembly goto
+    ])
+
+
 # ---- end of program
 def write_end(lines: list[str]):
     """Write code that signals end of assembly program"""
@@ -453,6 +514,12 @@ class CodeWriter:
 
     def write_if(self, label: str) -> None:
         write_if(self.lines, self.stem, label)
+
+    def write_function(self, label:str, num_args: int) -> None:
+        write_function(self.lines, function_name=label, num_args=num_args)
+
+    def write_return(self):
+        write_return(self.lines)
 
     def write_comment(self, comment: str):
         self.lines.append(
