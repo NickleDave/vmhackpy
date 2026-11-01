@@ -49,5 +49,9 @@ def main():
                     writer.write_goto(label=parser.arg1)
                 case CommandType.C_IF:
                     writer.write_if(label=parser.arg1)
+                case CommandType.C_FUNCTION:
+                    writer.write_function(label=parser.arg1, num_args=parser.arg2)
+                case CommandType.C_RETURN:
+                    writer.write_return()
 
     writer.close()
