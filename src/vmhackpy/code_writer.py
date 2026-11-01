@@ -329,11 +329,11 @@ def write_function(lines: list[str], function_name: str, num_args: int) -> None:
     # variables will go. So we can simply loop in our assembly generation, as follows: 
     for _ in range(num_args):
         lines.extend([
-            "@SP",              # Set A to Memory[0] (the stack pointer SP)
-            "A=M",              # Set A to *value* in SP
-            "M=0",              # Set Memory[SP] to 0 -- initializes the local variable
-            "@SP",              # Set up to increment SP
-            "M=M+1",            # Actually increment SP
+            "    @SP",              # Set A to Memory[0] (the stack pointer SP)
+            "    A=M",              # Set A to *value* in SP
+            "    M=0",              # Set Memory[SP] to 0 -- initializes the local variable
+            "    @SP",              # Set up to increment SP
+            "    M=M+1",            # Actually increment SP
         ])
 
 
