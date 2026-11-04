@@ -174,6 +174,30 @@ class Parser:
                 self._command_type = CommandType.C_RETURN
                 self._arg1 = None
                 self._arg2 = None
+            case "call":
+                if len(command_parts) != 3:
+                    raise ValueError(
+                        f"Command '{command_parts[0]}' should have 2 arguments, "
+                        f"but had {len(command_parts) - 1}"
+                    )
+
+                label: list[str] = LabelPattern.findall(command_parts[1])
+                if len(label) == 1:
+                    label = label[0]
+                else:
+                    raise ParseError(
+                        f"Line {self.line_no}: '{command_parts[1]}' is not a valid label:\n{command}"
+                    )
+                try:
+                    num_args = int(command_parts[2])
+                except ValueError as e:
+                    raise ValueError(
+                        f"Line {self.line_no}: Could not parse `num_args` of `function` command as int:\n{command}"
+                    ) from e
+
+                self._command_type = CommandType.C_CALL
+                self._arg1 = label
+                self._arg2 = num_args
             case _:
                 raise ParseError(f"Unknown command: '{command}'")
 
