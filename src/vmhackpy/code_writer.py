@@ -20,7 +20,7 @@ def write_init(lines: list[str], return_addr_counter: int):
         "// call Sys.init",
     ])
     write_call(
-        lines, "Sys.init", 0, return_addr_counter
+        lines, "Sys.init", 0, "null", return_addr_counter
     )
 
 
