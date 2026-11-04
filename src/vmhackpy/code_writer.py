@@ -377,7 +377,7 @@ def write_return(lines: list[str]):
     lines.extend([
         "    @R14",             # Set up to get temp variable RET
         "    A=M",              # Put return address from RET in A
-        "    0; JMP",           # Idiomatic Hack assembly goto
+        "    0;JMP",           # Idiomatic Hack assembly goto
     ])
 
 
