@@ -49,8 +49,10 @@ def main():
                 case CommandType.C_IF:
                     writer.write_if(label=parser.arg1)
                 case CommandType.C_FUNCTION:
-                    writer.write_function(label=parser.arg1, num_args=parser.arg2)
+                    writer.write_function(function_name=parser.arg1, num_args=parser.arg2)
                 case CommandType.C_RETURN:
                     writer.write_return()
+                case CommandType.C_CALL:
+                    writer.write_call(function_name=parser.arg1, num_args=parser.arg2)
 
     writer.close()
