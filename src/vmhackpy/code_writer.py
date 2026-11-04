@@ -296,26 +296,26 @@ def write_pop_static(lines: list[str], stem:str, index: int):
 
 
 # ---- program flow ------------------------------------------------------------------------
-def write_label(lines: list[str], stem: str, label: str) -> None:
+def write_label(lines: list[str], function_name: str, label: str) -> None:
     lines.extend([
-        f"({stem}.{label})",    # Write label
+        f"({function_name}${label})",    # Write label
     ])
 
 
-def write_goto(lines: list[str], stem: str, label: str) -> None:
+def write_goto(lines: list[str], function_name: str, label: str) -> None:
     lines.extend([
-      f"    @{stem}.{label}",   # Put label in A
+      f"    @{function_name}${label}",   # Put label in A
        "    0;JMP",             # Idiomatic way of writing unconditional jump in Hack assembly
     ])
 
 
-def write_if(lines: list[str], stem: str, label: str) -> None:
+def write_if(lines: list[str], function_name: str, label: str) -> None:
     lines.extend([
         "    @SP",              # Set up to pop
         "    M=M-1",            # Actually decrement stack pointer
         "    A=M",              # Set A to M[0]
         "    D=M",              # Pop into D
-       f"    @{stem}.{label}",  # Put label in A
+       f"    @{function_name}${label}",  # Put label in A
         "    D;JNE",            # Jump if the value we popped off the stack is not equal to zero
     ])
 
