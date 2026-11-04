@@ -33,7 +33,7 @@ def main():
 
     for vm_file in vm_files:
         parser = Parser(vm_file)
-        writer.function_name = "null"  # reset for every vm file
+        writer.current_function_name = "null"  # reset for every vm file
         while parser.has_more_commands():
             parser.advance()
             writer.write_comment(parser.line)

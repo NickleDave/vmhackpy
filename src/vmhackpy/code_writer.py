@@ -485,12 +485,10 @@ class CodeWriter:
         self.lines = []
         self.jump_counter = 0
         self.return_addr_counter = 0
-        self.stem: str = None
-        self.function_name = "null"
+        self.current_function_name = "null"
 
     def set_filename(self, filename: str | pathlib.Path):
         self.filename = pathlib.Path(filename)
-        self.stem = self.filename.stem
 
     def write_init(self):
         write_init(self.lines, self.return_addr_counter)
@@ -540,7 +538,7 @@ class CodeWriter:
                 ram_address = pointer_temp_ram_address(segment, index)
                 write_push_pointer_temp(self.lines, ram_address)
             case (CommandType.C_PUSH, "static"):
-                write_push_static(self.lines, self.stem, index)
+                write_push_static(self.lines, self.current_function_name, index)
             # ---- POP cases ---------------------------------------------------
             case (
                 (CommandType.C_POP, "argument") |
@@ -557,7 +555,7 @@ class CodeWriter:
                 ram_address = pointer_temp_ram_address(segment, index)
                 write_pop_pointer_temp(self.lines, ram_address)
             case (CommandType.C_POP, "static"):
-                write_pop_static(self.lines, self.stem, index)
+                write_pop_static(self.lines, self.current_function_name, index)
             # ---- error handling ----------------------------------------------
             case _:
                 raise ValueError(
@@ -565,16 +563,16 @@ class CodeWriter:
                 )
 
     def write_label(self, label: str) -> None:
-        write_label(self.lines, self.function_name, label)
+        write_label(self.lines, self.current_function_name, label)
 
     def write_goto(self, label: str) -> None:
-        write_goto(self.lines, self.function_name, label)
+        write_goto(self.lines, self.current_function_name, label)
 
     def write_if(self, label: str) -> None:
-        write_if(self.lines, self.function_name, label)
+        write_if(self.lines, self.current_function_name, label)
 
     def write_function(self, function_name:str, num_args: int) -> None:
-        self.function_name = function_name
+        self.current_function_name = function_name
         write_function(self.lines, function_name=function_name, num_args=num_args)
 
     def write_return(self):
@@ -583,7 +581,7 @@ class CodeWriter:
     def write_call(self, function_name:str, num_args: int) -> None:
         write_call(
             self.lines, function_name=function_name, num_args=num_args, 
-            return_addr_counter=self.return_addr_counter
+            callee=self.current_function_name, return_addr_counter=self.return_addr_counter
         )
         self.return_addr_counter += 1
 
