@@ -17,7 +17,7 @@ def main():
     source = pathlib.Path(args.source)
     if source.is_dir():
         vm_files = sorted(source.glob("*.vm"))
-        
+        output_path = source / f"{source.stem}.asm"
     else:
         if not source.suffix == ".vm":
             raise ValueError(
@@ -25,8 +25,7 @@ def main():
                f"but suffix was: '{source.suffix}'"
             )
         vm_files = [source]
-    # next line works regardless of whether we have a dir of files or a single file
-    output_path = source.parent / f"{source.stem}.asm"
+        output_path = source.parent / f"{source.stem}.asm"
 
     writer = CodeWriter()
     writer.set_filename(output_path)
