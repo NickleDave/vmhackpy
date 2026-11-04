@@ -381,10 +381,10 @@ def write_return(lines: list[str]):
     ])
 
 
-def write_call(lines: list[str], function_name: str, num_args: int, return_addr_counter: int) -> None:
-    return_addr_label = f"return-address-{return_addr_counter}"
+def write_call(lines: list[str], function_name: str, num_args: int, callee: str, return_addr_counter: int) -> None:
+    return_addr_label = f"return_address_{return_addr_counter}"
     lines.extend([
-       f"    @{return_addr_label}", # Put return address label in A as constant
+       f"    @{callee}${return_addr_label}", # Put return address label in A as constant
         "    D=A",              # Copy constant to D so we can put SP in A
         "    @SP",              # Put SP address in A
         "    A=M",              # Put actual SP value in A
@@ -441,7 +441,7 @@ def write_call(lines: list[str], function_name: str, num_args: int, return_addr_
        f"    @{function_name}",
         "    0;JMP",
        # Declare label for return address
-       f"({return_addr_label})"
+       f"({callee}${return_addr_label})"
     ])
 
 
