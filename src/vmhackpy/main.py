@@ -29,8 +29,7 @@ def main():
 
     writer = CodeWriter()
     writer.set_filename(output_path)
-    # FIXME: uncomment once you finish `write_init`
-    # writer.write_init()
+    writer.write_init()
 
     for vm_file in vm_files:
         parser = Parser(vm_file)
