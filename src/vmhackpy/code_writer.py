@@ -381,13 +381,67 @@ def write_return(lines: list[str]):
     ])
 
 
-# ---- end of program
-def write_end(lines: list[str]):
-    """Write code that signals end of assembly program"""
+def write_call(lines: list[str], function_name: str, num_args: int, return_addr_counter: int) -> None:
+    return_addr_label = f"return-address-{return_addr_counter}"
     lines.extend([
-        "(END)",
-        "    @END",
+       f"    @{return_addr_label}", # Put return address label in A as constant
+        "    D=A",              # Copy constant to D so we can put SP in A
+        "    @SP",              # Put SP address in A
+        "    A=M",              # Put actual SP value in A
+        "    M=D",              # Push return address to stack
+        "    @SP",              # Set up to increment stack pointer
+        "    M=M+1",            # Increment stack pointer
+        # push LCL
+        "    @LCL",             # Put LOCAL address in A
+        "    D=M",              # Copy LOCAL value to D
+        "    @SP",              # Put SP address in A
+        "    A=M",              # Put actual SP value in A
+        "    M=D",              # Push LOCAL to stack
+        "    @SP",              # Set up to increment stack pointer
+        "    M=M+1",            # Increment stack pointer
+        # push ARG
+        "    @ARG",             # Put ARG address in A
+        "    D=M",              # Copy LOCAL value to D
+        "    @SP",              # Put SP address in A
+        "    A=M",              # Put actual SP value in A
+        "    M=D",              # Push ARG to stack
+        "    @SP",              # Set up to increment stack pointer
+        "    M=M+1",            # Increment stack pointer
+        # push THIS
+        "    @THIS",            # Put THIS address in A
+        "    D=M",              # Copy THIS value to D
+        "    @SP",              # Put SP address in A
+        "    A=M",              # Put actual SP value in A
+        "    M=D",              # Push THIS to stack
+        "    @SP",              # Set up to increment stack pointer
+        "    M=M+1",            # Increment stack pointer
+        # push THAT
+        "    @THAT",            # Put THAT address in A
+        "    D=M",              # Copy THAT value to D
+        "    @SP",              # Put SP address in A
+        "    A=M",              # Put actual SP value in A
+        "    M=D",              # Push THAT to stack
+        "    @SP",              # Set up to increment stack pointer
+        "    M=M+1",            # Increment stack pointer
+        # ARG = SP-n-5
+        "    @SP",
+        "    D=M",
+       f"    @{num_args}",
+        "    D=D-A",
+        "    @5",
+        "    D=D-A",
+        "    @ARG",
+        "    M=D",
+        # LCL = SP
+        "    @SP",
+        "    D=M",
+        "    @LCL",
+        "    M=D",
+        # goto function
+       f"    @{function_name}",
         "    0;JMP",
+       # Declare label for return address
+       f"({return_addr_label})"
     ])
 
 
