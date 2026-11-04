@@ -348,7 +348,7 @@ def write_return(lines: list[str]):
         "    @5",               # Set up to decrement LCL to compute return address
         "    D=D-A",            # Compute return address
         "    @R14",             # Set up to put return address into Memory[14]
-        "    M=D",              # Put return address into Memoryu[14], temp variable "RET" (fig 8.5 from book)
+        "    M=D",              # Put return address into Memory[14], temp variable "RET" (fig 8.5 from book)
         "    @SP",              # Set up to pop the return value into ARG
         "    A=M-1",            # Set A to pointer to return value
         "    D=M",              # Put actual return value in D
@@ -370,7 +370,7 @@ def write_return(lines: list[str]):
            f"    @{ind}",       # Put offset into A
             "    A=D-A",        # FRAME - offset
             "    D=M",          # Put `*(FRAME - offset)` in D
-           f"    @{pointer}",  # Put pointer location into A
+           f"    @{pointer}",   # Put pointer location into A
             "    M=D",          # `pointer = *(FRAME - offset)`
         ])
 
