@@ -484,7 +484,9 @@ class CodeWriter:
     ):
         self.lines = []
         self.jump_counter = 0
+        self.return_addr_counter = 0
         self.stem: str = None
+        self.function_name = "null"
 
     def set_filename(self, filename: str | pathlib.Path):
         self.filename = pathlib.Path(filename)
