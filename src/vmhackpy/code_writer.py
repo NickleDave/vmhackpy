@@ -565,19 +565,27 @@ class CodeWriter:
                 )
 
     def write_label(self, label: str) -> None:
-        write_label(self.lines, self.stem, label)
+        write_label(self.lines, self.function_name, label)
 
     def write_goto(self, label: str) -> None:
-        write_goto(self.lines, self.stem, label)
+        write_goto(self.lines, self.function_name, label)
 
     def write_if(self, label: str) -> None:
-        write_if(self.lines, self.stem, label)
+        write_if(self.lines, self.function_name, label)
 
-    def write_function(self, label:str, num_args: int) -> None:
-        write_function(self.lines, function_name=label, num_args=num_args)
+    def write_function(self, function_name:str, num_args: int) -> None:
+        self.function_name = function_name
+        write_function(self.lines, function_name=function_name, num_args=num_args)
 
     def write_return(self):
         write_return(self.lines)
+
+    def write_call(self, function_name:str, num_args: int) -> None:
+        write_call(
+            self.lines, function_name=function_name, num_args=num_args, 
+            return_addr_counter=self.return_addr_counter
+        )
+        self.return_addr_counter += 1
 
     def write_comment(self, comment: str):
         self.lines.append(
@@ -585,6 +593,5 @@ class CodeWriter:
         )
 
     def close(self):
-        write_end(self.lines)
         with self.filename.open("w") as fp:
             fp.writelines(line + "\n" for line in self.lines)
