@@ -5,21 +5,23 @@ from .parser import CommandType
 
 
 # ---- bootstrap
-def write_init(lines: list[str]):
+def write_init(lines: list[str], return_addr_counter: int):
     """Write bootstrap code, initialization that must occur 
     at the start of each Hack assembly program to set up 
     the Virtual Machine
     """
     lines.extend([
-        "// bootstrap",
+        "// bootstrap code",
+        "// SP = 256",
         "    @256",
         "    D=A",
         "    @SP",
         "    M=D",
-        #FIXME: add call to sys.init
-        "",
-        "// program start",
+        "// call Sys.init",
     ])
+    write_call(
+        lines, "Sys.init", 0, return_addr_counter
+    )
 
 
 # ---- Stack arithmetic commands --------------------------------------------------------
