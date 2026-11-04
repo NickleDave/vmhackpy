@@ -493,7 +493,7 @@ class CodeWriter:
         self.stem = self.filename.stem
 
     def write_init(self):
-        write_init(self.lines)
+        write_init(self.lines, self.return_addr_counter)
 
     def write_arithmetic(self, command: str):
         match command:
