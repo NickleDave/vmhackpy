@@ -346,7 +346,8 @@ def write_return(lines: list[str]):
         "    @R13",             # Set up to put LCL into Memory[13] 
         "    M=D",              # Put LCL value into Memory[13], temp variable "FRAME" (fig. 8.5 from book)
         "    @5",               # Set up to decrement LCL to compute return address
-        "    D=D-A",            # Compute return address
+        "    A=D-A",            # Compute address of return address
+        "    D=M",              # Put return address in D
         "    @R14",             # Set up to put return address into Memory[14]
         "    M=D",              # Put return address into Memory[14], temp variable "RET" (fig 8.5 from book)
         "    @SP",              # Set up to pop the return value into ARG
