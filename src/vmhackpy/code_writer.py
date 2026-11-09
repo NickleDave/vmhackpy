@@ -278,7 +278,7 @@ def write_push_static(lines: list[str], stem:str, index: int):
         "    D=M",              # Put value from address in D
         "    @SP",              # Set A to 0
         "    A=M",              # Set A to stack pointer
-        "    M=D",              # Push value from pointer / temp on to stack
+        "    M=D",              # Push value from static on stack
         "    @SP",              # Set up to increment stack pointer
         "    M=M+1",            # Actually increment stack pointer           
     ])
@@ -539,7 +539,8 @@ class CodeWriter:
                 ram_address = pointer_temp_ram_address(segment, index)
                 write_push_pointer_temp(self.lines, ram_address)
             case (CommandType.C_PUSH, "static"):
-                write_push_static(self.lines, self.current_function_name, index)
+                class_name, function_name = self.current_function_name.split('.')
+                write_push_static(self.lines, class_name, index)
             # ---- POP cases ---------------------------------------------------
             case (
                 (CommandType.C_POP, "argument") |
@@ -556,7 +557,8 @@ class CodeWriter:
                 ram_address = pointer_temp_ram_address(segment, index)
                 write_pop_pointer_temp(self.lines, ram_address)
             case (CommandType.C_POP, "static"):
-                write_pop_static(self.lines, self.current_function_name, index)
+                class_name, function_name = self.current_function_name.split('.')
+                write_pop_static(self.lines, class_name, index)
             # ---- error handling ----------------------------------------------
             case _:
                 raise ValueError(
