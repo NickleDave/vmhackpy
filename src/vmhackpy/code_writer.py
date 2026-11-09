@@ -240,8 +240,7 @@ def write_pop_lcl_arg_this_that(lines: list[str], symbol:str, index: int):
         "    @R13",     # put VM register address in A
         "    M=D",      # stash segment base + offset from D in VM register
         "    @SP",      # Set A register to RAM[0]
-        "    M=M-1",    # Decrement stack pointer, RAM[0] = RAM[0] - 1
-        "    A=M",      # put *value* of stack pointer in A
+        "    AM=M-1",    # Decrement stack pointer, RAM[0] = RAM[0] - 1, and put in A
         "    D=M",      # pop top value off stack in D
         "    @R13",     # put VM register address in A, pointer to segment base + offset
         "    A=M",      # Set A to segment base + offset
@@ -264,8 +263,7 @@ def write_push_pointer_temp(lines: list[str], ram_address: int):
 def write_pop_pointer_temp(lines: list[str], ram_address: int):
     lines.extend([
         "    @SP",              # Set up to decrement stack pointer
-        "    M=M-1",            # Actually decrement stack pointer
-        "    A=M",              # Put *value* of RAM[stack pointer] in A
+        "    AM=M-1",            # Actually decrement stack pointer and put in A
         "    D=M",              # Pop value off stack into D
        f"    @{ram_address}",   # Put address within pointer or temp segment in A
         "    M=D",              # Put value we popped off stack into pointer/temp
@@ -287,8 +285,7 @@ def write_push_static(lines: list[str], stem:str, index: int):
 def write_pop_static(lines: list[str], stem:str, index: int):
     lines.extend([
         "    @SP",              # Set up to decrement stack pointer
-        "    M=M-1",            # Actually decrement stack pointer
-        "    A=M",              # Put *value* of RAM[stack pointer] in A
+        "    AM=M-1",            # Actually decrement stack pointer and put in A
         "    D=M",              # Pop value off stack into D
        f"    @{stem}.{index}",  # Put static variable address in A
         "    M=D",              # Put value popped off stack into static variable
