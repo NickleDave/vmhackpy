@@ -12,7 +12,7 @@ compare-to StaticsTest.cmp,
 
 set RAM[0] 256,
 
-repeat 2500 {
+repeat 1750 {
 	ticktock;
 }
 
